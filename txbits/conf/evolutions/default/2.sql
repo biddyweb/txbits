@@ -1416,13 +1416,13 @@ begin
       select distinct on (currency) address
       from users_addresses
       where assigned is NULL and user_id = 0 and currency not in (
-        select currency
+        select a.currency
         from (
                select distinct on (currency) currency, address from users_addresses
                 where user_id = a_uid and currency = any (
                   select currency
                   from currencies_crypto where active = true
-                ) order by currency, assigned desc
+                ) order by users_addresses.currency, assigned desc
              ) a
         left join deposits_crypto dc on dc.address = a.address where dc.id is NULL
       )
@@ -1432,7 +1432,7 @@ begin
     select currency, address, assigned from users_addresses
     where user_id = a_uid and (currency, node_id) = any
                                 (
-                                  select currency, node_id
+                                  select currencies_crypto.currency, node_id
                                   from currencies_crypto inner join wallets_crypto
                                   on currencies_crypto.currency = wallets_crypto.currency
                                   where active = true and retired = false
